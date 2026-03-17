@@ -41,7 +41,7 @@ Page({
   reloadAll() {
     const userId = Number(storage.getUserId() || 0);
     const boundRestaurant = storage.getBoundRestaurant();
-    const dishes = storage.getDishes();
+    const dishes = [];
     const cart = storage.getCartToday();
 
     const filteredDishes = this.filterDishes(dishes, this.data.keyword);
@@ -58,32 +58,27 @@ Page({
       totalAmount: totals.totalAmount,
     });
 
-    // fetch from backend (best-effort)
-    if (userId) {
-      request(`/api/restaurants/current?userId=${userId}`)
-        .then((r) => {
-          if (r && r.id) {
-            storage.setBoundRestaurant(r);
-            this.setData({ boundRestaurant: r });
-            return request(`/api/dishes?restaurantId=${r.id}`);
-          }
-          return null;
-        })
-        .then((ds) => {
-          if (Array.isArray(ds)) {
-            storage.setDishes(ds);
-            const filtered = this.filterDishes(ds, this.data.keyword);
-            const totals2 = calcTotals(ds, this.data.cart);
-            this.setData({
-              dishes: ds,
-              filteredDishes: filtered,
-              totalCount: totals2.totalCount,
-              totalAmount: totals2.totalAmount,
-            });
-          }
-        })
-        .catch(() => {});
-    }
+    // fetch from backend
+    if (!userId) return;
+    request(`/api/restaurants/current?userId=${userId}`)
+      .then((r) => {
+        storage.setBoundRestaurant(r || null);
+        this.setData({ boundRestaurant: r || null });
+        if (r && r.id) return request(`/api/dishes?restaurantId=${r.id}`);
+        return [];
+      })
+      .then((ds) => {
+        const dishes2 = Array.isArray(ds) ? ds : [];
+        const filtered = this.filterDishes(dishes2, this.data.keyword);
+        const totals2 = calcTotals(dishes2, this.data.cart);
+        this.setData({
+          dishes: dishes2,
+          filteredDishes: filtered,
+          totalCount: totals2.totalCount,
+          totalAmount: totals2.totalAmount,
+        });
+      })
+      .catch(() => wx.showToast({ title: '后端未启动', icon: 'none' }));
   },
 
   filterDishes(dishes, keyword) {
@@ -131,7 +126,6 @@ Page({
           })
           .then((ds) => {
             if (Array.isArray(ds)) {
-              storage.setDishes(ds);
               this.setData({
                 dishes: ds,
                 filteredDishes: this.filterDishes(ds, this.data.keyword),
@@ -181,7 +175,6 @@ Page({
     if (!this.data.boundRestaurant) return;
     if (this.data.totalCount === 0) return;
 
-    const dishesById = new Map(this.data.dishes.map((d) => [String(d.id), d]));
     const items = Object.keys(this.data.cart).map((id) => ({
       dishId: Number(id),
       quantity: Number(this.data.cart[id] || 0),

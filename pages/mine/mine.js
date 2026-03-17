@@ -41,11 +41,9 @@ Page({
   reload() {
     const profile = storage.getProfile();
     const boundRestaurant = storage.getBoundRestaurant();
-    const ordersByDay = storage.getOrdersByDay();
-    const stats = computeStats(ordersByDay);
+    const stats = { days: 0, orders: 0, totalCount: 0, totalAmount: '0.00' };
     this.setData({ profile, boundRestaurant, stats });
 
-    // fetch from backend (best-effort)
     const userId = Number(storage.getUserId() || 0);
     if (!userId) return;
     request(`/api/users/me?userId=${userId}`)
@@ -58,10 +56,15 @@ Page({
 
     request(`/api/restaurants/current?userId=${userId}`)
       .then((r) => {
-        if (r && r.id) {
-          storage.setBoundRestaurant(r);
-          this.setData({ boundRestaurant: r });
-        }
+        storage.setBoundRestaurant(r || null);
+        this.setData({ boundRestaurant: r || null });
+        const qs = r && r.id ? `&restaurantId=${r.id}` : '';
+        return request(`/api/orders/by-day?userId=${userId}${qs}`);
+      })
+      .then((resp) => {
+        const days = (resp && resp.days) || {};
+        const stats2 = computeStats(days);
+        this.setData({ stats: stats2 });
       })
       .catch(() => {});
   },
@@ -115,12 +118,11 @@ Page({
   onClearHistory() {
     wx.showModal({
       title: '清空记录',
-      content: '将清空本地所有点餐记录与今日选择，是否继续？',
+      content: '将清空本地“今日选择”，并不会删除后端订单记录。是否继续？',
       confirmText: '清空',
       confirmColor: '#ee0a24',
       success: (res) => {
         if (!res.confirm) return;
-        storage.remove(KEYS.ORDERS_BY_DAY);
         storage.clearCartToday();
         this.reload();
         wx.showToast({ title: '已清空', icon: 'success' });

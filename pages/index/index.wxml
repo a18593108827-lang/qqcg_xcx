@@ -3,7 +3,7 @@
     left-icon="info-o"
     color="#ff6799"
     background="#fff0f6"
-    text="首页先用本地存储跑通：创建/绑定餐馆 → 选菜 → 加入今日记录。后端接好后再把数据源换成接口。"
+    text="欢迎秋秋，请选择喜欢的进行下单，聪聪马上就帮秋秋做好啦。"
   />
 
   <view class="gap-12"></view>

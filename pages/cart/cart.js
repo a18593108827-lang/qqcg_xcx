@@ -58,26 +58,16 @@ Page({
   },
 
   reload() {
-    const ordersByDay = storage.getOrdersByDay();
-    const dayTabs = buildViewModel(ordersByDay);
-
-    // 默认选中：今天（如果有），否则选最新一天
-    let activeTab = 0;
-    const today = todayYMD();
-    const idxToday = dayTabs.findIndex((t) => t.day === today);
-    if (idxToday >= 0) activeTab = idxToday;
-
-    this.setData({ dayTabs, activeTab });
-
-    // fetch from backend (best-effort)
     const userId = Number(storage.getUserId() || 0);
     const bound = storage.getBoundRestaurant();
-    if (!userId) return;
+    if (!userId) {
+      this.setData({ dayTabs: [], activeTab: 0 });
+      return;
+    }
     const qs = bound && bound.id ? `&restaurantId=${bound.id}` : '';
     request(`/api/orders/by-day?userId=${userId}${qs}`)
       .then((resp) => {
         const days = (resp && resp.days) || {};
-        // convert to local shape to reuse existing UI
         const local = {};
         Object.keys(days).forEach((day) => {
           local[day] = (days[day] || []).map((o) => ({
@@ -95,14 +85,12 @@ Page({
             totalCount: Number(o.totalCount),
           }));
         });
-        storage.set(storage.KEYS.ORDERS_BY_DAY, local);
         const tabs2 = buildViewModel(local);
-        let at = 0;
-        const idx = tabs2.findIndex((t) => t.day === todayYMD());
-        if (idx >= 0) at = idx;
-        this.setData({ dayTabs: tabs2, activeTab: at });
+        const today = todayYMD();
+        const idx = tabs2.findIndex((t) => t.day === today);
+        this.setData({ dayTabs: tabs2, activeTab: idx >= 0 ? idx : 0 });
       })
-      .catch(() => {});
+      .catch(() => wx.showToast({ title: '后端未启动', icon: 'none' }));
   },
 
   onTabChange(e) {
