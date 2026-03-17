@@ -1,5 +1,6 @@
 const storage = require('../../utils/storage');
 const { todayYMD } = require('../../utils/date');
+const { request } = require('../../utils/request');
 
 function formatTime(ts) {
   const d = new Date(Number(ts));
@@ -67,6 +68,41 @@ Page({
     if (idxToday >= 0) activeTab = idxToday;
 
     this.setData({ dayTabs, activeTab });
+
+    // fetch from backend (best-effort)
+    const userId = Number(storage.getUserId() || 0);
+    const bound = storage.getBoundRestaurant();
+    if (!userId) return;
+    const qs = bound && bound.id ? `&restaurantId=${bound.id}` : '';
+    request(`/api/orders/by-day?userId=${userId}${qs}`)
+      .then((resp) => {
+        const days = (resp && resp.days) || {};
+        // convert to local shape to reuse existing UI
+        const local = {};
+        Object.keys(days).forEach((day) => {
+          local[day] = (days[day] || []).map((o) => ({
+            id: o.id,
+            restaurantId: o.restaurantId,
+            restaurantName: o.restaurantName,
+            createdAt: o.createdAt ? new Date(o.createdAt).getTime() : Date.now(),
+            items: (o.items || []).map((it) => ({
+              dishId: it.dishId,
+              name: it.name,
+              price: Number(it.price),
+              quantity: Number(it.quantity),
+            })),
+            totalAmount: Number(o.totalAmount),
+            totalCount: Number(o.totalCount),
+          }));
+        });
+        storage.set(storage.KEYS.ORDERS_BY_DAY, local);
+        const tabs2 = buildViewModel(local);
+        let at = 0;
+        const idx = tabs2.findIndex((t) => t.day === todayYMD());
+        if (idx >= 0) at = idx;
+        this.setData({ dayTabs: tabs2, activeTab: at });
+      })
+      .catch(() => {});
   },
 
   onTabChange(e) {

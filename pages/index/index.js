@@ -1,5 +1,6 @@
 const storage = require('../../utils/storage');
 const { todayYMD } = require('../../utils/date');
+const { request } = require('../../utils/request');
 
 function calcTotals(dishes, cartMap) {
   let totalCount = 0;
@@ -23,6 +24,7 @@ function calcTotals(dishes, cartMap) {
 Page({
   data: {
     today: todayYMD(),
+    userId: 0,
     boundRestaurant: null,
     dishes: [],
     filteredDishes: [],
@@ -37,6 +39,7 @@ Page({
   },
 
   reloadAll() {
+    const userId = Number(storage.getUserId() || 0);
     const boundRestaurant = storage.getBoundRestaurant();
     const dishes = storage.getDishes();
     const cart = storage.getCartToday();
@@ -46,6 +49,7 @@ Page({
 
     this.setData({
       today: todayYMD(),
+      userId,
       boundRestaurant,
       dishes,
       filteredDishes,
@@ -53,6 +57,33 @@ Page({
       totalCount: totals.totalCount,
       totalAmount: totals.totalAmount,
     });
+
+    // fetch from backend (best-effort)
+    if (userId) {
+      request(`/api/restaurants/current?userId=${userId}`)
+        .then((r) => {
+          if (r && r.id) {
+            storage.setBoundRestaurant(r);
+            this.setData({ boundRestaurant: r });
+            return request(`/api/dishes?restaurantId=${r.id}`);
+          }
+          return null;
+        })
+        .then((ds) => {
+          if (Array.isArray(ds)) {
+            storage.setDishes(ds);
+            const filtered = this.filterDishes(ds, this.data.keyword);
+            const totals2 = calcTotals(ds, this.data.cart);
+            this.setData({
+              dishes: ds,
+              filteredDishes: filtered,
+              totalCount: totals2.totalCount,
+              totalAmount: totals2.totalAmount,
+            });
+          }
+        })
+        .catch(() => {});
+    }
   },
 
   filterDishes(dishes, keyword) {
@@ -77,25 +108,38 @@ Page({
   },
 
   onBindOrCreateTap() {
-    const cur = storage.getBoundRestaurant();
-    const defaultName = cur ? cur.name : '我们的小餐馆';
-    const defaultAddress = cur ? cur.address : '';
-
+    const userId = Number(storage.getUserId() || 0);
+    if (!userId) {
+      wx.showToast({ title: '后端未连接', icon: 'none' });
+      return;
+    }
     wx.showModal({
-      title: '绑定餐馆',
-      content:
-        '小程序端先做最小版：点击确定后将绑定一个示例餐馆（可多次切换）。后端完成后这里会改成创建/选择餐馆。',
-      confirmText: '确定',
-      cancelText: '取消',
+      title: '创建并绑定餐馆',
+      content: '先创建一个简单示例餐馆（后续再做真实表单）。',
+      confirmText: '创建',
       success: (res) => {
         if (!res.confirm) return;
-        storage.setBoundRestaurant({
-          id: 1,
-          name: defaultName,
-          address: defaultAddress,
-        });
-        this.reloadAll();
-        wx.showToast({ title: '已绑定', icon: 'success' });
+        request('/api/restaurants/bindOrCreate', 'POST', {
+          userId,
+          name: '我们的小餐馆',
+          address: '',
+        })
+          .then((r) => {
+            storage.setBoundRestaurant(r);
+            this.setData({ boundRestaurant: r });
+            return request(`/api/dishes?restaurantId=${r.id}`);
+          })
+          .then((ds) => {
+            if (Array.isArray(ds)) {
+              storage.setDishes(ds);
+              this.setData({
+                dishes: ds,
+                filteredDishes: this.filterDishes(ds, this.data.keyword),
+              });
+            }
+            wx.showToast({ title: '已绑定', icon: 'success' });
+          })
+          .catch(() => wx.showToast({ title: '绑定失败', icon: 'none' }));
       },
     });
   },
@@ -138,33 +182,28 @@ Page({
     if (this.data.totalCount === 0) return;
 
     const dishesById = new Map(this.data.dishes.map((d) => [String(d.id), d]));
-    const items = Object.keys(this.data.cart).map((id) => {
-      const dish = dishesById.get(String(id));
-      const quantity = Number(this.data.cart[id] || 0);
-      return {
-        dishId: Number(id),
-        name: dish ? dish.name : `菜品${id}`,
-        price: dish ? Number(dish.price) : 0,
-        quantity,
-      };
-    });
+    const items = Object.keys(this.data.cart).map((id) => ({
+      dishId: Number(id),
+      quantity: Number(this.data.cart[id] || 0),
+    }));
 
-    const order = {
-      id: `local_${Date.now()}`,
+    const userId = Number(storage.getUserId() || 0);
+    if (!userId) {
+      wx.showToast({ title: '后端未连接', icon: 'none' });
+      return;
+    }
+
+    request('/api/orders/submit', 'POST', {
+      userId,
       restaurantId: this.data.boundRestaurant.id,
-      restaurantName: this.data.boundRestaurant.name,
-      day: todayYMD(),
-      createdAt: Date.now(),
       items,
-      totalAmount: Number(this.data.totalAmount),
-      totalCount: this.data.totalCount,
-    };
-
-    storage.addOrderForToday(order);
-    storage.clearCartToday();
-    this.reloadAll();
-
-    wx.showToast({ title: '已加入记录', icon: 'success' });
-    wx.switchTab({ url: '/pages/cart/cart' });
+    })
+      .then(() => {
+        storage.clearCartToday();
+        this.reloadAll();
+        wx.showToast({ title: '已下单', icon: 'success' });
+        wx.switchTab({ url: '/pages/cart/cart' });
+      })
+      .catch(() => wx.showToast({ title: '下单失败', icon: 'none' }));
   },
 });

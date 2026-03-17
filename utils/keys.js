@@ -4,5 +4,7 @@ module.exports = {
   CART_TODAY: 'CART_TODAY',
   ORDERS_BY_DAY: 'ORDERS_BY_DAY',
   PROFILE: 'PROFILE',
+  OPEN_ID: 'OPEN_ID',
+  USER_ID: 'USER_ID',
 };
 

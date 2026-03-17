@@ -1,5 +1,6 @@
 const storage = require('../../utils/storage');
 const KEYS = storage.KEYS;
+const { request } = require('../../utils/request');
 
 function computeStats(ordersByDay) {
   const days = Object.keys(ordersByDay || {});
@@ -43,6 +44,26 @@ Page({
     const ordersByDay = storage.getOrdersByDay();
     const stats = computeStats(ordersByDay);
     this.setData({ profile, boundRestaurant, stats });
+
+    // fetch from backend (best-effort)
+    const userId = Number(storage.getUserId() || 0);
+    if (!userId) return;
+    request(`/api/users/me?userId=${userId}`)
+      .then((u) => {
+        if (!u) return;
+        storage.setProfile({ nickname: u.nickname || '未设置', avatarUrl: u.avatarUrl || '' });
+        this.setData({ profile: storage.getProfile() });
+      })
+      .catch(() => {});
+
+    request(`/api/restaurants/current?userId=${userId}`)
+      .then((r) => {
+        if (r && r.id) {
+          storage.setBoundRestaurant(r);
+          this.setData({ boundRestaurant: r });
+        }
+      })
+      .catch(() => {});
   },
 
   goBind() {
