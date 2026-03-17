@@ -5,6 +5,9 @@ node_modules/
 ### Spring Boot local config
 server/src/main/resources/application-local.yml
 
+### Maven build output
+server/target/
+
 ### OS / editor
 .DS_Store
 Thumbs.db
