@@ -1,0 +1,26 @@
+.profile .left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: #f2f3f5;
+}
+
+.info .name {
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.info .sub {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+}
+
+.actions {
+  padding: 20rpx;
+}

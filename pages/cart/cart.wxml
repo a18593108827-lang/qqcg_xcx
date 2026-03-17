@@ -1,0 +1,55 @@
+<view class="container">
+  <view wx:if="{{ dayTabs.length === 0 }}" class="card">
+    <van-empty description="还没有点餐记录" />
+    <view class="gap-12"></view>
+    <van-button type="primary" block bindtap="goOrder">
+      去首页点餐
+    </van-button>
+  </view>
+
+  <view wx:else>
+    <van-tabs
+      active="{{ activeTab }}"
+      animated
+      swipeable
+      ellipsis="{{ false }}"
+      bind:change="onTabChange"
+    >
+      <van-tab wx:for="{{ dayTabs }}" wx:key="day" wx:for-item="dayItem" title="{{ dayItem.title }}">
+        <view class="gap-12"></view>
+
+        <view class="card summary">
+          <view class="row">
+            <view>
+              <view class="sum-title">{{ dayItem.day }}</view>
+              <view class="muted sum-sub">共 {{ dayItem.stat.orderCount }} 单 · {{ dayItem.stat.totalCount }} 份</view>
+            </view>
+            <view class="sum-money">¥{{ dayItem.stat.totalAmount }}</view>
+          </view>
+        </view>
+
+        <view class="gap-12"></view>
+
+        <view wx:for="{{ dayItem.orders }}" wx:key="id" wx:for-item="order" class="order-card">
+          <view class="row">
+            <view class="order-title">{{ order.restaurantName || '未命名餐馆' }}</view>
+            <view class="order-money">¥{{ order.totalAmount }}</view>
+          </view>
+          <view class="muted order-sub">
+            {{ order.createdAtText }} · {{ order.totalCount }} 份
+          </view>
+
+          <view class="items">
+            <view wx:for="{{ order.items }}" wx:key="dishId" wx:for-item="it" class="item-line">
+              <text class="item-name">{{ it.name }}</text>
+              <text class="muted">×{{ it.quantity }}</text>
+              <text class="item-right">¥{{ it.lineTotal }}</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="bottom-spacer"></view>
+      </van-tab>
+    </van-tabs>
+  </view>
+</view>

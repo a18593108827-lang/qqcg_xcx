@@ -1,0 +1,68 @@
+.summary .sum-title {
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.summary .sum-sub {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+}
+
+.summary .sum-money {
+  font-size: 40rpx;
+  font-weight: 900;
+  color: #ff6799;
+}
+
+.order-card {
+  background: #fff;
+  border-radius: 18rpx;
+  padding: 18rpx;
+}
+
+.order-card + .order-card {
+  margin-top: 16rpx;
+}
+
+.order-title {
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.order-money {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #ff6799;
+}
+
+.order-sub {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+}
+
+.items {
+  margin-top: 10rpx;
+  border-top: 1rpx dashed #ebedf0;
+  padding-top: 10rpx;
+}
+
+.item-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  padding: 6rpx 0;
+}
+
+.item-name {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.item-right {
+  min-width: 120rpx;
+  text-align: right;
+  font-weight: 700;
+}

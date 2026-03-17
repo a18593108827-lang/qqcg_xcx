@@ -1,0 +1,84 @@
+<view class="container">
+  <van-notice-bar
+    left-icon="info-o"
+    color="#ff6799"
+    background="#fff0f6"
+    text="首页先用本地存储跑通：创建/绑定餐馆 → 选菜 → 加入今日记录。后端接好后再把数据源换成接口。"
+  />
+
+  <view class="gap-12"></view>
+
+  <view class="card restaurant-card">
+    <view class="row">
+      <view>
+        <view class="title">{{ boundRestaurant ? boundRestaurant.name : '未绑定餐馆' }}</view>
+        <view class="sub" wx:if="{{ boundRestaurant }}">
+          {{ boundRestaurant.address || '（未填写地址）' }}
+        </view>
+        <view class="sub" wx:else>
+          先创建或绑定一个餐馆，点餐记录会归属到该餐馆
+        </view>
+      </view>
+      <van-button size="small" type="primary" bindtap="onBindOrCreateTap">
+        {{ boundRestaurant ? '切换' : '创建/绑定' }}
+      </van-button>
+    </view>
+  </view>
+
+  <view class="gap-12"></view>
+
+  <van-search
+    value="{{ keyword }}"
+    placeholder="搜索菜品（名称/分类）"
+    bind:change="onSearchChange"
+    bind:clear="onSearchClear"
+  />
+
+  <view class="gap-12"></view>
+
+  <view wx:if="{{ !boundRestaurant }}" class="card">
+    <view class="muted">绑定餐馆后才能点餐。</view>
+  </view>
+
+  <view wx:elif="{{ filteredDishes.length === 0 }}" class="card">
+    <van-empty description="暂无菜品" />
+  </view>
+
+  <view wx:else>
+    <view class="dish-item" wx:for="{{ filteredDishes }}" wx:key="id">
+      <view class="dish-info">
+        <view class="dish-name">{{ item.name }}</view>
+        <view class="dish-meta">
+          <van-tag plain type="primary">{{ item.category || '未分类' }}</van-tag>
+          <text class="muted">ID: {{ item.id }}</text>
+        </view>
+        <view class="dish-price">¥{{ item.price }}</view>
+      </view>
+      <view class="dish-actions">
+        <van-button size="mini" plain bindtap="onDec" data-id="{{ item.id }}">-</van-button>
+        <text class="qty">{{ cart[item.id] || 0 }}</text>
+        <van-button size="mini" type="primary" bindtap="onInc" data-id="{{ item.id }}">+</van-button>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-spacer"></view>
+</view>
+
+<view class="sticky-bottom">
+  <view class="bottom-summary">
+    <view class="left">
+      <view>
+        合计 <text class="money">¥{{ totalAmount }}</text>
+      </view>
+      <view class="small">已选 {{ totalCount }} 份 · {{ today }}</view>
+    </view>
+    <van-button
+      type="primary"
+      disabled="{{ !boundRestaurant || totalCount === 0 }}"
+      bindtap="onSubmitToday"
+    >
+      加入今日记录
+    </van-button>
+  </view>
+</view>

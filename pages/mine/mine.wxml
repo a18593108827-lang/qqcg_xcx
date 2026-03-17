@@ -1,0 +1,62 @@
+<view class="container">
+  <view class="card profile">
+    <view class="row">
+      <view class="left">
+        <image class="avatar" src="{{ profile.avatarUrl || defaultAvatar }}" mode="aspectFill" />
+        <view class="info">
+          <view class="name">{{ profile.nickname || '未设置' }}</view>
+          <view class="muted sub">用于标记“是谁点的”（后端接入后可同步到账号）</view>
+        </view>
+      </view>
+      <van-button size="small" plain type="primary" bindtap="onGetWxProfile">
+        获取微信信息
+      </van-button>
+    </view>
+  </view>
+
+  <view class="gap-12"></view>
+
+  <van-cell-group inset>
+    <van-cell
+      title="绑定餐馆"
+      value="{{ boundRestaurant ? boundRestaurant.name : '未绑定' }}"
+      is-link
+      bind:click="goBind"
+    />
+    <van-cell
+      title="地址"
+      value="{{ boundRestaurant ? (boundRestaurant.address || '（未填写）') : '-' }}"
+    />
+  </van-cell-group>
+
+  <view class="gap-12"></view>
+
+  <van-cell-group inset>
+    <van-cell title="累计点餐天数" value="{{ stats.days }}" />
+    <van-cell title="累计订单数" value="{{ stats.orders }}" />
+    <van-cell title="累计份数" value="{{ stats.totalCount }}" />
+    <van-cell title="累计金额" value="¥{{ stats.totalAmount }}" />
+  </van-cell-group>
+
+  <view class="gap-12"></view>
+
+  <view class="card actions">
+    <van-button block type="primary" bindtap="goOrder">
+      去点餐
+    </van-button>
+    <view class="gap-12"></view>
+    <van-button
+      block
+      plain
+      type="danger"
+      disabled="{{ !boundRestaurant }}"
+      bindtap="onUnbind"
+    >
+      解绑餐馆
+    </van-button>
+    <view class="gap-12"></view>
+    <van-button block plain bindtap="onClearHistory">
+      清空点餐记录（本地）
+    </van-button>
+  </view>
+</view>
