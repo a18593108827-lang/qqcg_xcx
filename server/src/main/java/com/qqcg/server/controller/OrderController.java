@@ -40,7 +40,10 @@ public class OrderController {
   }
 
   @PostMapping("/submit")
-  public OrderDtos.OrderResp submit(@Valid @RequestBody OrderDtos.SubmitOrderReq req) {
+  public OrderDtos.OrderResp submit(
+    @RequestAttribute("userId") Long userId,
+    @Valid @RequestBody OrderDtos.SubmitOrderReq req
+  ) {
     RestaurantEntity restaurant = restaurantRepository.findById(req.getRestaurantId()).orElseThrow();
 
     List<Long> dishIds = req.getItems().stream().map(OrderDtos.Item::getDishId).toList();
@@ -71,7 +74,7 @@ public class OrderController {
     }
 
     OrderEntity order = new OrderEntity();
-    order.setUserId(req.getUserId());
+    order.setUserId(userId);
     order.setRestaurantId(req.getRestaurantId());
     order.setTotalCount(totalCount);
     order.setTotalAmount(totalAmount);
@@ -89,7 +92,7 @@ public class OrderController {
 
   @GetMapping("/by-day")
   public OrderDtos.OrdersByDayResp byDay(
-    @RequestParam("userId") Long userId,
+    @RequestAttribute("userId") Long userId,
     @RequestParam(value = "restaurantId", required = false) Long restaurantId,
     @RequestParam(value = "days", required = false, defaultValue = "14") int days
   ) {

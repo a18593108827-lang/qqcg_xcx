@@ -9,11 +9,13 @@
   height: 96rpx;
   border-radius: 50%;
   background: #f2f3f5;
+  border: 1rpx solid rgba(94, 60, 24, 0.18);
 }
 
 .info .name {
   font-size: 34rpx;
   font-weight: 800;
+  letter-spacing: 2rpx;
 }
 
 .info .sub {

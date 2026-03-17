@@ -9,29 +9,39 @@ App({
 
   onLaunch() {
     ensureSeedData();
-    this.ensureLogin();
+    this.ensureWxLogin();
   },
 
-  ensureLogin() {
-    let openId = storage.getOpenId();
-    if (!openId) {
-      openId = `dev_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-      storage.setOpenId(openId);
-    }
+  ensureWxLogin() {
+    wx.login({
+      success: (res) => {
+        const code = res && res.code;
+        if (!code) return;
 
-    const profile = storage.getProfile();
-    request('/api/auth/login', 'POST', {
-      openId,
-      nickname: profile.nickname,
-      avatarUrl: profile.avatarUrl,
-    })
-      .then((resp) => {
-        storage.setUserId(resp.userId || 0);
-        storage.setProfile({ nickname: resp.nickname, avatarUrl: resp.avatarUrl });
-      })
-      .catch(() => {
-        // ignore: backend may be offline during dev
-      });
+        const profile = storage.getProfile();
+        request('/api/auth/wxLogin', 'POST', {
+          code,
+          nickname: profile.nickname,
+          avatarUrl: profile.avatarUrl,
+        })
+          .then((resp) => {
+            storage.setUserId(resp.userId || 0);
+            storage.setOpenId(resp.openId || '');
+            storage.setToken(resp.token || '');
+            storage.setProfile({ nickname: resp.nickname, avatarUrl: resp.avatarUrl });
+          })
+          .catch((err) => {
+            const msg =
+              (err && err.data && err.data.error) ||
+              (err && err.errMsg) ||
+              '登录失败';
+            wx.showModal({ title: '登录失败', content: String(msg), showCancel: false });
+          });
+      },
+      fail: () => {
+        wx.showToast({ title: 'wx.login 失败', icon: 'none' });
+      },
+    });
   },
 });
 

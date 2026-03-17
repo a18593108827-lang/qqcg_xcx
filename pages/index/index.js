@@ -60,7 +60,7 @@ Page({
 
     // fetch from backend
     if (!userId) return;
-    request(`/api/restaurants/current?userId=${userId}`)
+    request(`/api/restaurants/current`)
       .then((r) => {
         storage.setBoundRestaurant(r || null);
         this.setData({ boundRestaurant: r || null });
@@ -103,8 +103,8 @@ Page({
   },
 
   onBindOrCreateTap() {
-    const userId = Number(storage.getUserId() || 0);
-    if (!userId) {
+    const token = storage.getToken && storage.getToken();
+    if (!token) {
       wx.showToast({ title: '后端未连接', icon: 'none' });
       return;
     }
@@ -115,7 +115,6 @@ Page({
       success: (res) => {
         if (!res.confirm) return;
         request('/api/restaurants/bindOrCreate', 'POST', {
-          userId,
           name: '我们的小餐馆',
           address: '',
         })
@@ -180,14 +179,13 @@ Page({
       quantity: Number(this.data.cart[id] || 0),
     }));
 
-    const userId = Number(storage.getUserId() || 0);
-    if (!userId) {
-      wx.showToast({ title: '后端未连接', icon: 'none' });
+    const token = storage.getToken && storage.getToken();
+    if (!token) {
+      wx.showToast({ title: '未登录', icon: 'none' });
       return;
     }
 
     request('/api/orders/submit', 'POST', {
-      userId,
       restaurantId: this.data.boundRestaurant.id,
       items,
     })

@@ -58,14 +58,14 @@ Page({
   },
 
   reload() {
-    const userId = Number(storage.getUserId() || 0);
+    const token = storage.getToken && storage.getToken();
     const bound = storage.getBoundRestaurant();
-    if (!userId) {
+    if (!token) {
       this.setData({ dayTabs: [], activeTab: 0 });
       return;
     }
-    const qs = bound && bound.id ? `&restaurantId=${bound.id}` : '';
-    request(`/api/orders/by-day?userId=${userId}${qs}`)
+    const qs = bound && bound.id ? `restaurantId=${bound.id}` : '';
+    request(`/api/orders/by-day${qs ? `?${qs}` : ''}`)
       .then((resp) => {
         const days = (resp && resp.days) || {};
         const local = {};

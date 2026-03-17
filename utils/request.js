@@ -1,3 +1,5 @@
+const storage = require('./storage');
+
 function getApiBaseUrl() {
   const app = getApp();
   const base = app && app.globalData && app.globalData.apiBaseUrl;
@@ -6,6 +8,7 @@ function getApiBaseUrl() {
 
 function request(path, method = 'GET', data = {}, header = {}) {
   const url = `${getApiBaseUrl()}${path}`;
+  const token = storage.getToken && storage.getToken();
   return new Promise((resolve, reject) => {
     wx.request({
       url,
@@ -13,6 +16,7 @@ function request(path, method = 'GET', data = {}, header = {}) {
       data,
       header: {
         'content-type': 'application/json',
+        ...(token ? { 'X-Token': token } : {}),
         ...header,
       },
       success(res) {

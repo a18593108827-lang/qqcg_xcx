@@ -1,9 +1,9 @@
 <view class="container">
   <van-notice-bar
     left-icon="info-o"
-    color="#ff6799"
-    background="#fff0f6"
-    text="欢迎秋秋，请选择喜欢的进行下单，聪聪马上就帮秋秋做好啦。"
+    color="#8b1a1a"
+    background="#fbf3e6"
+    text="一盏清茶一份香，挑你所爱，下单即成。"
   />
 
   <view class="gap-12"></view>
@@ -16,10 +16,10 @@
           {{ boundRestaurant.address || '（未填写地址）' }}
         </view>
         <view class="sub" wx:else>
-          先创建或绑定一个餐馆，点餐记录会归属到该餐馆
+          先创建并绑定一家餐馆，方可开席点餐
         </view>
       </view>
-      <van-button size="small" type="primary" bindtap="onBindOrCreateTap">
+      <van-button size="small" color="#8b1a1a" bindtap="onBindOrCreateTap">
         {{ boundRestaurant ? '切换' : '创建/绑定' }}
       </van-button>
     </view>
@@ -74,11 +74,11 @@
       <view class="small">已选 {{ totalCount }} 份 · {{ today }}</view>
     </view>
     <van-button
-      type="primary"
+      color="#8b1a1a"
       disabled="{{ !boundRestaurant || totalCount === 0 }}"
       bindtap="onSubmitToday"
     >
-      加入今日记录
+      下单
     </van-button>
   </view>
 </view>

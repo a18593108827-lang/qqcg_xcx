@@ -3,6 +3,8 @@ package com.qqcg.server.controller;
 import com.qqcg.server.dto.AuthDtos;
 import com.qqcg.server.entity.UserEntity;
 import com.qqcg.server.repo.UserRepository;
+import com.qqcg.server.service.SessionService;
+import com.qqcg.server.service.WeChatAuthService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,9 +12,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 public class AuthController {
   private final UserRepository userRepository;
+  private final WeChatAuthService weChatAuthService;
+  private final SessionService sessionService;
 
-  public AuthController(UserRepository userRepository) {
+  public AuthController(UserRepository userRepository, WeChatAuthService weChatAuthService, SessionService sessionService) {
     this.userRepository = userRepository;
+    this.weChatAuthService = weChatAuthService;
+    this.sessionService = sessionService;
   }
 
   @PostMapping("/login")
@@ -44,7 +50,23 @@ public class AuthController {
     resp.setOpenId(u.getOpenId());
     resp.setNickname(u.getNickname());
     resp.setAvatarUrl(u.getAvatarUrl());
+    resp.setToken(sessionService.issueToken(u.getId()));
     return resp;
+  }
+
+  @PostMapping("/wxLogin")
+  public AuthDtos.LoginResp wxLogin(@Valid @RequestBody AuthDtos.WxLoginReq req) {
+    String openId = weChatAuthService.getOpenIdByCode(req.getCode());
+    AuthDtos.LoginReq r = new AuthDtos.LoginReq();
+    r.setOpenId(openId);
+    r.setNickname(req.getNickname());
+    r.setAvatarUrl(req.getAvatarUrl());
+    return login(r);
+  }
+
+  @PostMapping("/logout")
+  public void logout(@RequestAttribute("userId") Long userId) {
+    sessionService.revoke(userId);
   }
 }
 

@@ -3,8 +3,8 @@ package com.qqcg.server.controller;
 import com.qqcg.server.entity.UserEntity;
 import com.qqcg.server.repo.UserRepository;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -19,7 +19,7 @@ public class UserController {
   }
 
   @GetMapping("/me")
-  public Map<String, Object> me(@RequestParam("userId") Long userId) {
+  public Map<String, Object> me(@RequestAttribute("userId") Long userId) {
     UserEntity u = userRepository.findById(userId).orElseThrow();
     return Map.of(
       "id", u.getId(),

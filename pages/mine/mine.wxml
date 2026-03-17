@@ -1,5 +1,8 @@
 <view class="container">
   <view class="card profile">
+    <view class="gf-title">个人小札</view>
+    <view class="gf-subtitle">一人一食，一日一记</view>
+    <view class="gf-divider"></view>
     <view class="row">
       <view class="left">
         <image class="avatar" src="{{ profile.avatarUrl || defaultAvatar }}" mode="aspectFill" />
@@ -8,7 +11,7 @@
           <view class="muted sub">用于标记“是谁点的”（后端接入后可同步到账号）</view>
         </view>
       </view>
-      <van-button size="small" plain type="primary" bindtap="onGetWxProfile">
+      <van-button size="small" plain color="#8b1a1a" bindtap="onGetWxProfile">
         获取微信信息
       </van-button>
     </view>
@@ -41,14 +44,14 @@
   <view class="gap-12"></view>
 
   <view class="card actions">
-    <van-button block type="primary" bindtap="goOrder">
+    <van-button block color="#8b1a1a" bindtap="goOrder">
       去点餐
     </van-button>
     <view class="gap-12"></view>
     <van-button
       block
       plain
-      type="danger"
+      color="#8b1a1a"
       disabled="{{ !boundRestaurant }}"
       bindtap="onUnbind"
     >

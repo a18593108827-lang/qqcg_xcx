@@ -85,6 +85,8 @@ module.exports = {
   setOpenId: (v) => set(KEYS.OPEN_ID, v),
   getUserId: () => get(KEYS.USER_ID, 0),
   setUserId: (v) => set(KEYS.USER_ID, v),
+  getToken: () => get(KEYS.TOKEN, ''),
+  setToken: (v) => set(KEYS.TOKEN, v),
   getBoundRestaurant,
   setBoundRestaurant,
   clearBoundRestaurant,

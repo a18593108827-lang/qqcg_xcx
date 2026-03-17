@@ -11,8 +11,18 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DB:0}
 
 logging:
   level:
     org.hibernate.SQL: info
+
+wechat:
+  appid: ${WX_APPID:}
+  secret: ${WX_SECRET:}
 

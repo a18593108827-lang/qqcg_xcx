@@ -5,6 +5,7 @@ import com.qqcg.server.entity.RestaurantEntity;
 import com.qqcg.server.entity.UserRestaurantBindEntity;
 import com.qqcg.server.repo.RestaurantRepository;
 import com.qqcg.server.repo.UserRestaurantBindRepository;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,7 @@ public class RestaurantController {
   }
 
   @GetMapping("/current")
-  public RestaurantDtos.RestaurantResp current(@RequestParam("userId") Long userId) {
+  public RestaurantDtos.RestaurantResp current(@RequestAttribute("userId") Long userId) {
     return bindRepository.findTopByUserIdOrderByBoundAtDesc(userId)
       .flatMap(b -> restaurantRepository.findById(b.getRestaurantId()))
       .map(this::toResp)
@@ -28,19 +29,28 @@ public class RestaurantController {
   }
 
   @PostMapping("/bindOrCreate")
-  public RestaurantDtos.RestaurantResp bindOrCreate(@Valid @RequestBody RestaurantDtos.BindOrCreateReq req) {
+  public RestaurantDtos.RestaurantResp bindOrCreate(
+    @RequestAttribute("userId") Long userId,
+    @Valid @RequestBody RestaurantDtos.BindOrCreateReq req
+  ) {
     RestaurantEntity r = new RestaurantEntity();
     r.setName(req.getName());
     r.setAddress(req.getAddress());
-    r.setCreatedBy(req.getUserId());
+    r.setCreatedBy(userId);
     r = restaurantRepository.save(r);
 
     UserRestaurantBindEntity bind = new UserRestaurantBindEntity();
-    bind.setUserId(req.getUserId());
+    bind.setUserId(userId);
     bind.setRestaurantId(r.getId());
     bindRepository.save(bind);
 
     return toResp(r);
+  }
+
+  @PostMapping("/unbind")
+  @Transactional
+  public void unbind(@RequestAttribute("userId") Long userId) {
+    bindRepository.deleteByUserId(userId);
   }
 
   private RestaurantDtos.RestaurantResp toResp(RestaurantEntity r) {

@@ -15,8 +15,6 @@ public class OrderDtos {
   @Data
   public static class SubmitOrderReq {
     @NotNull
-    private Long userId;
-    @NotNull
     private Long restaurantId;
 
     @NotEmpty

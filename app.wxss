@@ -1,6 +1,6 @@
 page {
-  background: #f7f8fa;
-  color: #323233;
+  background: #f6f1e7;
+  color: #2b2b2b;
   font-size: 28rpx;
 }
 
@@ -9,13 +9,15 @@ page {
 }
 
 .card {
-  background: #fff;
-  border-radius: 20rpx;
+  background: rgba(255, 252, 246, 0.96);
+  border-radius: 18rpx;
   padding: 20rpx;
+  border: 1rpx solid rgba(94, 60, 24, 0.18);
+  box-shadow: 0 12rpx 40rpx rgba(94, 60, 24, 0.08);
 }
 
 .muted {
-  color: #969799;
+  color: rgba(43, 43, 43, 0.55);
 }
 
 .row {
@@ -34,11 +36,36 @@ page {
   right: 0;
   bottom: 0;
   padding: 16rpx 24rpx calc(16rpx + env(safe-area-inset-bottom));
-  background: rgba(255, 255, 255, 0.98);
-  border-top: 1rpx solid #ebedf0;
+  background: rgba(246, 241, 231, 0.96);
+  border-top: 1rpx solid rgba(94, 60, 24, 0.18);
+  backdrop-filter: blur(8px);
 }
 
 .bottom-spacer {
   height: 160rpx;
 }
+
+/* 古风主题辅助 */
+.gf-title {
+  font-size: 34rpx;
+  font-weight: 800;
+  letter-spacing: 2rpx;
+}
+
+.gf-subtitle {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: rgba(43, 43, 43, 0.55);
+}
+
+.gf-divider {
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, rgba(94, 60, 24, 0.22), transparent);
+  margin: 14rpx 0;
+}
+
+.gf-red {
+  color: #8b1a1a;
+}
+
 

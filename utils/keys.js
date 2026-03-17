@@ -6,5 +6,6 @@ module.exports = {
   PROFILE: 'PROFILE',
   OPEN_ID: 'OPEN_ID',
   USER_ID: 'USER_ID',
+  TOKEN: 'TOKEN',
 };
 

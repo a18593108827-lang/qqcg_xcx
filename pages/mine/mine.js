@@ -44,9 +44,9 @@ Page({
     const stats = { days: 0, orders: 0, totalCount: 0, totalAmount: '0.00' };
     this.setData({ profile, boundRestaurant, stats });
 
-    const userId = Number(storage.getUserId() || 0);
-    if (!userId) return;
-    request(`/api/users/me?userId=${userId}`)
+    const token = storage.getToken && storage.getToken();
+    if (!token) return;
+    request(`/api/users/me`)
       .then((u) => {
         if (!u) return;
         storage.setProfile({ nickname: u.nickname || '未设置', avatarUrl: u.avatarUrl || '' });
@@ -54,12 +54,12 @@ Page({
       })
       .catch(() => {});
 
-    request(`/api/restaurants/current?userId=${userId}`)
+    request(`/api/restaurants/current`)
       .then((r) => {
         storage.setBoundRestaurant(r || null);
         this.setData({ boundRestaurant: r || null });
         const qs = r && r.id ? `&restaurantId=${r.id}` : '';
-        return request(`/api/orders/by-day?userId=${userId}${qs}`);
+        return request(`/api/orders/by-day${qs ? `?${qs.slice(1)}` : ''}`);
       })
       .then((resp) => {
         const days = (resp && resp.days) || {};
@@ -101,6 +101,8 @@ Page({
 
   onUnbind() {
     if (!this.data.boundRestaurant) return;
+    const token = storage.getToken && storage.getToken();
+    if (!token) return;
     wx.showModal({
       title: '解绑餐馆',
       content: '解绑后需要重新绑定才能点餐。',
@@ -108,9 +110,13 @@ Page({
       confirmColor: '#ee0a24',
       success: (res) => {
         if (!res.confirm) return;
-        storage.clearBoundRestaurant();
-        this.reload();
-        wx.showToast({ title: '已解绑', icon: 'success' });
+        request(`/api/restaurants/unbind`, 'POST')
+          .then(() => {
+            storage.clearBoundRestaurant();
+            this.reload();
+            wx.showToast({ title: '已解绑', icon: 'success' });
+          })
+          .catch(() => wx.showToast({ title: '解绑失败', icon: 'none' }));
       },
     });
   },
