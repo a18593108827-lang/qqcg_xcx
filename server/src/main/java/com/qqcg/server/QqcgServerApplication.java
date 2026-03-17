@@ -1,0 +1,12 @@
+package com.qqcg.server;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class QqcgServerApplication {
+  public static void main(String[] args) {
+    SpringApplication.run(QqcgServerApplication.class, args);
+  }
+}
+
